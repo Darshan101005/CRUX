@@ -1,0 +1,129 @@
+<div class="aurora"></div>
+
+@if (isPublicPage()) {
+  <main class="min-h-screen">
+    <router-outlet></router-outlet>
+  </main>
+} @else {
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside 
+      class="glass-panel m-4 mr-0 flex flex-col transition-all duration-500 ease-in-out z-50"
+      [class.w-20]="isSidebarCollapsed()"
+      [class.w-64]="!isSidebarCollapsed()"
+    >
+      <!-- Logo -->
+      <div class="p-6 flex items-center gap-3 overflow-hidden">
+        <div class="min-w-[40px] h-10 rounded-lg bg-gradient-to-br from-wave-start to-wave-end flex items-center justify-center shadow-lg">
+          <mat-icon class="text-arctic-dark">storm</mat-icon>
+        </div>
+        <span 
+          class="text-2xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-ice-blue transition-opacity duration-300"
+          [class.opacity-0]="isSidebarCollapsed()"
+        >
+          CRUX
+        </span>
+      </div>
+
+      <!-- Nav Items -->
+      <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden">
+        @for (item of navItems; track item.route) {
+          <a 
+            [routerLink]="item.route"
+            routerLinkActive="bg-white/10 border-white/20 text-wave-start"
+            [routerLinkActiveOptions]="{exact: true}"
+            class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-200 group relative"
+          >
+            <mat-icon class="transition-colors duration-200">{{item.icon}}</mat-icon>
+            <span 
+              class="font-medium whitespace-nowrap transition-all duration-300"
+              [class.opacity-0]="isSidebarCollapsed()"
+              [class.translate-x-4]="isSidebarCollapsed()"
+            >
+              {{item.label}}
+            </span>
+            
+            <!-- Tooltip for collapsed state -->
+            @if (isSidebarCollapsed()) {
+              <div class="absolute left-full ml-4 px-2 py-1 bg-arctic-mid border border-white/10 rounded text-xs opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                {{item.label}}
+              </div>
+            }
+          </a>
+        }
+      </nav>
+
+      <!-- User Profile & Bottom Actions -->
+      <div class="p-4 border-t border-white/10 space-y-2">
+        <div 
+          routerLink="/settings"
+          routerLinkActive="bg-white/5 border-white/20"
+          class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-all cursor-pointer group"
+        >
+          <div class="w-10 h-10 rounded-full bg-ice-blue/20 border border-ice-blue/40 flex items-center justify-center overflow-hidden shrink-0 group-hover:border-wave-start transition-colors">
+            <mat-icon class="text-ice-blue group-hover:text-wave-start transition-colors">person</mat-icon>
+          </div>
+          <div 
+            class="flex flex-col flex-1 overflow-hidden transition-all duration-300"
+            [class.opacity-0]="isSidebarCollapsed()"
+            [class.w-0]="isSidebarCollapsed()"
+          >
+            <span class="text-sm font-semibold truncate">Arctic Explorer</span>
+            <span class="text-[10px] text-white/40 truncate uppercase tracking-widest font-bold">{{planService.currentTier()}} Tier</span>
+          </div>
+        </div>
+
+        <button 
+          (click)="logout()"
+          class="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-red-500/10 text-white/60 hover:text-red-400 transition-all duration-200 group"
+        >
+          <mat-icon class="shrink-0 transition-colors">logout</mat-icon>
+          <span 
+            class="font-medium whitespace-nowrap transition-all duration-300"
+            [class.opacity-0]="isSidebarCollapsed()"
+            [class.w-0]="isSidebarCollapsed()"
+          >
+            Log Out
+          </span>
+        </button>
+      </div>
+
+      <!-- Collapse Toggle -->
+      <button 
+        (click)="toggleSidebar()"
+        class="absolute -right-3 top-20 w-6 h-6 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/20 transition-all z-50"
+      >
+        <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">
+          {{ isSidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}
+        </mat-icon>
+      </button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden relative">
+      <!-- Background Waves -->
+      <div class="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-wave-start/10 blur-[120px] rounded-full animate-pulse"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-ice-blue/10 blur-[150px] rounded-full"></div>
+      </div>
+
+      <!-- Header -->
+      <header class="h-20 flex items-center justify-between px-8 z-10">
+        <h1 class="text-2xl">CRUX Dashboard</h1>
+        
+        <div class="flex items-center gap-4">
+          <button class="p-2 rounded-full hover:bg-white/5 transition-all relative">
+            <mat-icon>notifications</mat-icon>
+            <span class="absolute top-2 right-2 w-2 h-2 bg-wave-start rounded-full"></span>
+          </button>
+          <div class="h-8 w-[1px] bg-white/10 mx-2"></div>
+        </div>
+      </header>
+
+      <!-- Scrollable Content -->
+      <div class="flex-1 overflow-y-auto p-8 pt-0">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+}

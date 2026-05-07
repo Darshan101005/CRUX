@@ -1,0 +1,353 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark, .dark *));
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-arctic-dark: #0F2027;
+  --color-arctic-mid: #203A43;
+  --color-arctic-light: #2C5364;
+  --color-ice-blue: #3FD5FF;
+  --color-snow: #F5F7FA;
+  --color-wave-start: #43E97B;
+  --color-wave-end: #38F9D7;
+  --color-neon-blue: #00f2ff;
+  --color-neon-violet: #8e2de2;
+}
+
+@layer base {
+  body {
+    @apply bg-arctic-dark text-snow font-sans antialiased min-h-screen overflow-x-hidden;
+    background: radial-gradient(circle at top right, rgba(63, 213, 255, 0.1), transparent),
+      radial-gradient(circle at bottom left, rgba(142, 45, 226, 0.1), transparent),
+      linear-gradient(135deg, #0F2027 0%, #1a2a3a 50%, #0F2027 100%);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/[0.05] backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)];
+  }
+
+  .glass-card {
+    @apply bg-white/[0.03] backdrop-blur-md border border-white/5 rounded-2xl transition-all duration-500 hover:bg-white/[0.08] hover:border-ice-blue/30 hover:shadow-[0_0_40px_rgba(63,213,255,0.15)];
+  }
+
+  .btn-primary {
+    @apply px-8 py-3 rounded-2xl font-bold transition-all duration-500 flex items-center justify-center gap-3 relative overflow-hidden;
+    background: linear-gradient(135deg, var(--color-ice-blue), #2C5364);
+    @apply text-white hover:scale-[1.02] active:scale-95 shadow-[0_0_25px_rgba(63,213,255,0.3)] hover:shadow-[0_0_50px_rgba(63,213,255,0.5)];
+  }
+
+  .btn-signup {
+    @apply px-8 py-3 rounded-2xl font-bold transition-all duration-500 flex items-center justify-center gap-3 relative overflow-hidden;
+    background: linear-gradient(135deg, var(--color-neon-violet), #4a154b);
+    @apply text-white hover:scale-[1.02] active:scale-95 shadow-[0_0_25px_rgba(142,45,226,0.3)] hover:shadow-[0_0_50px_rgba(142,45,226,0.5)];
+  }
+
+  .btn-secondary {
+    @apply px-8 py-3 rounded-2xl font-bold border border-white/10 bg-white/5 backdrop-blur-md transition-all duration-500 flex items-center justify-center gap-3;
+    @apply text-snow hover:bg-white/10 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)];
+  }
+
+  .neon-glow {
+    @apply absolute -z-10 rounded-full mix-blend-screen animate-pulse;
+    filter: blur(80px);
+  }
+
+  /* Commander Pingu - Refined CSS Mascot */
+  .pingu-container {
+    @apply relative w-32 h-32 flex items-center justify-center translate-z-0;
+    perspective: 1000px;
+  }
+
+  .pingu-body {
+    @apply relative w-18 h-22 bg-zinc-900 rounded-[50%_50%_45%_45%] border-2 border-white/20;
+    background: linear-gradient(to bottom, #0F2027, #1a2a3a);
+    box-shadow:
+      0 0 30px rgba(63, 213, 255, 0.1),
+      inset 0 4px 10px rgba(255, 255, 255, 0.1);
+    z-index: 5;
+  }
+
+  /* Commander Visor */
+  .pingu-visor {
+    @apply absolute top-6 left-1/2 -translate-x-1/2 w-14 h-4 bg-ice-blue/40 rounded-lg border border-ice-blue/60 overflow-hidden z-20;
+    box-shadow:
+      inset 0 0 15px rgba(63, 213, 255, 0.8),
+      0 0 20px rgba(63, 213, 255, 0.4);
+  }
+
+  .pingu-visor-scan {
+    @apply absolute inset-0 w-1/2 bg-white/40;
+    filter: blur(8px);
+    animation: visor-scan 1.5s ease-in-out infinite;
+  }
+
+  @keyframes visor-scan {
+    0% {
+      transform: translateX(-150%);
+    }
+
+    100% {
+      transform: translateX(250%);
+    }
+  }
+
+  .pingu-belly {
+    @apply absolute bottom-2 left-1/2 -translate-x-1/2 w-11 h-13 bg-white/90 rounded-[50%_50%_40%_40%] z-10;
+    box-shadow: inset 0 -4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .pingu-beak {
+    @apply absolute top-10 left-1/2 -translate-x-1/2 w-4 h-3 bg-orange-500 rounded-full z-20;
+    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Commander Hat */
+  .pingu-hat {
+    @apply absolute -top-5 left-1/2 -translate-x-1/2 w-14 h-7 bg-zinc-950 border border-white/10 rounded-t-xl z-20 shadow-xl;
+  }
+
+  .pingu-hat::after {
+    content: '';
+    @apply absolute -bottom-1 left-1/2 -translate-x-1/2 w-18 h-2.5 bg-zinc-950 rounded-full border-b border-white/10;
+  }
+
+  .pingu-wing {
+    @apply absolute top-8 w-5 h-12 bg-zinc-900 rounded-full border border-white/5;
+    transform-origin: top center;
+    z-index: 4;
+  }
+
+  .pingu-wing.left {
+    left: -5px;
+    transform: rotate(25deg);
+  }
+
+  .pingu-wing.right {
+    right: -5px;
+    transform: rotate(-25deg);
+  }
+
+  .pingu-foot {
+    @apply absolute -bottom-1.5 w-7 h-4 bg-orange-600 rounded-full border border-black/20 z-0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .pingu-foot.left {
+    left: 4px;
+  }
+
+  .pingu-foot.right {
+    right: 4px;
+  }
+
+  /* Walking Animation Logic */
+  .pingu-walking .pingu-body {
+    animation: pingu-wobble 0.6s ease-in-out infinite;
+  }
+
+  .pingu-walking .pingu-foot.left {
+    animation: pingu-step-left 0.6s ease-in-out infinite;
+  }
+
+  .pingu-walking .pingu-foot.right {
+    animation: pingu-step-right 0.6s ease-in-out infinite;
+  }
+
+  .pingu-walking .pingu-wing.left {
+    animation: pingu-flap-left 1.2s ease-in-out infinite;
+  }
+
+  .pingu-walking .pingu-wing.right {
+    animation: pingu-flap-right 1.2s ease-in-out infinite;
+  }
+
+  @keyframes pingu-wobble {
+
+    0%,
+    100% {
+      transform: rotate(4deg) translateY(0);
+    }
+
+    50% {
+      transform: rotate(-4deg) translateY(-4px);
+    }
+  }
+
+  @keyframes pingu-step-left {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px) translateX(5px) rotate(-10deg);
+    }
+  }
+
+  @keyframes pingu-step-right {
+
+    0%,
+    100% {
+      transform: translateY(-10px) translateX(-5px) rotate(10deg);
+    }
+
+    50% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pingu-flap-left {
+
+    0%,
+    100% {
+      transform: rotate(25deg);
+    }
+
+    50% {
+      transform: rotate(55deg);
+    }
+  }
+
+  @keyframes pingu-flap-right {
+
+    0%,
+    100% {
+      transform: rotate(-25deg);
+    }
+
+    50% {
+      transform: rotate(-55deg);
+    }
+  }
+
+
+  .ice-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%233FD5FF' fill-opacity='0.1' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+    background-size: 1440px 100px;
+    animation: wave-move 20s linear infinite;
+  }
+}
+
+@keyframes wave-move {
+  from {
+    background-position-x: 0;
+  }
+
+  to {
+    background-position-x: 1440px;
+  }
+}
+
+@keyframes snow-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.8;
+  }
+
+  90% {
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.snowflake {
+  position: fixed;
+  background: white;
+  @apply dark:bg-white bg-blue-300;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: snow-fall linear infinite;
+}
+
+.aurora {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(67, 233, 123, 0.05), transparent 50%),
+    radial-gradient(ellipse at 30% 20%, rgba(63, 213, 255, 0.05), transparent 40%),
+    radial-gradient(ellipse at 80% 80%, rgba(142, 45, 226, 0.05), transparent 40%);
+  filter: blur(100px);
+  animation: aurora-shift 20s ease-in-out infinite alternate;
+  z-index: -20;
+  pointer-events: none;
+}
+
+@keyframes aurora-shift {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(10deg) scale(1.1);
+  }
+
+  100% {
+    transform: rotate(-10deg) scale(0.9);
+  }
+}
+
+@keyframes float-penguin {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(5deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(-5deg);
+  }
+}
+
+.floating-penguin {
+  animation: float-penguin 4s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-white/20;
+}

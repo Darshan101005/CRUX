@@ -1,0 +1,5 @@
+{
+  "name": "CRUX – AI Communication Intelligence",
+  "description": "A unified AI-powered communication platform that integrates Telegram, Gmail, Discord, and Slack with smart summarization.",
+  "requestFramePermissions": ["geolocation"]
+}
