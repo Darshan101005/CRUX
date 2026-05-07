@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, PLATFORM
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
+import { ThemeService } from './theme.service';
 
 interface Currency {
   code: string;
@@ -14,12 +15,12 @@ interface Currency {
   selector: 'app-landing',
   imports: [CommonModule, MatIconModule, RouterLink],
   template: `
-    <div [class]="isDarkMode() ? 'dark' : ''">
+    <div [class]="themeService.isDarkMode() ? 'dark' : ''">
       <!-- Main Container -->
       <div class="relative min-h-screen flex flex-col transition-colors duration-1000 overflow-x-hidden bg-snow dark:bg-arctic-dark text-arctic-dark dark:text-snow font-sans">
         
         <!-- Background Effects (Theme Dependent) -->
-        @if (isDarkMode()) {
+        @if (themeService.isDarkMode()) {
           <!-- Arctic Night Landscape -->
           <div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
             <div class="aurora animate-in fade-in duration-1000"></div>
@@ -83,9 +84,9 @@ interface Currency {
             <!-- Header Actions -->
             <div class="flex items-center gap-2 md:gap-4">
               <!-- Theme Toggle -->
-              <button (click)="toggleTheme()" class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors backdrop-blur-md">
+              <button (click)="themeService.toggleTheme()" class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors backdrop-blur-md">
                 <mat-icon class="text-arctic-dark dark:text-yellow-300 text-sm md:text-base">
-                  {{ isDarkMode() ? 'light_mode' : 'dark_mode' }}
+                  {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
                 </mat-icon>
               </button>
               
@@ -443,8 +444,8 @@ interface Currency {
 })
 export class Landing implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  public themeService = inject(ThemeService);
   
-  isDarkMode = signal(true);
   ipInfo = signal<any>(null);
   isChatOpen = signal(false);
 
@@ -477,10 +478,6 @@ export class Landing implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.snowInterval) clearInterval(this.snowInterval);
-  }
-
-  toggleTheme() {
-    this.isDarkMode.update(v => !v);
   }
   
   toggleChat() {

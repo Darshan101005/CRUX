@@ -22,6 +22,7 @@ const initDB = async () => {
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS platforms TEXT;');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS primary_purpose TEXT;');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT;');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_session TEXT;');
     console.log('Database table "users" initialized.');
   } catch (err) {
     console.error('Error initializing database:', err);

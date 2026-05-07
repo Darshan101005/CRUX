@@ -9,7 +9,16 @@ export class AuthService {
   private apiUrl = 'http://localhost:5000/api';
   currentUser = signal<any>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('user');
+        if (stored && stored !== 'undefined') {
+          this.currentUser.set(JSON.parse(stored));
+        }
+      }
+    } catch(e) {}
+  }
 
   signup(name: string, email: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/signup`, { name, email, password });
@@ -20,6 +29,7 @@ export class AuthService {
       tap((res: any) => {
         if (res.token) {
           localStorage.setItem('token', res.token);
+          localStorage.setItem('user', JSON.stringify(res.user));
           this.currentUser.set(res.user);
         }
       })
@@ -28,6 +38,7 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     this.currentUser.set(null);
   }
 

@@ -4,6 +4,10 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('./db');
+const { TelegramClient, Api } = require('telegram');
+const { StringSession } = require('telegram/sessions');
+
+const telegramLogins = new Map();
 
 const app = express();
 
@@ -112,6 +116,117 @@ app.post('/api/onboarding', async (req, res) => {
   } catch (error) {
     console.error('Onboarding error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Telegram MTProto Flow
+app.post('/api/telegram/send-otp', async (req, res) => {
+  try {
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) return res.status(400).json({ error: 'Phone number is required' });
+
+    const apiId = parseInt(process.env.TELEGRAM_API_ID);
+    const apiHash = process.env.TELEGRAM_API_HASH;
+
+    if (!apiId || !apiHash) {
+      return res.status(500).json({ error: 'Telegram API credentials not configured' });
+    }
+
+    const stringSession = new StringSession('');
+    const client = new TelegramClient(stringSession, apiId, apiHash, {
+      connectionRetries: 5,
+    });
+
+    await client.connect();
+
+    const { phoneCodeHash } = await client.sendCode(
+      { apiId, apiHash },
+      phoneNumber
+    );
+
+    telegramLogins.set(phoneNumber, { client, phoneCodeHash });
+
+    res.json({ message: 'OTP sent successfully', phoneCodeHash });
+  } catch (error) {
+    console.error('Telegram send code error:', error);
+    res.status(500).json({ error: error.message || 'Failed to send OTP' });
+  }
+});
+
+app.post('/api/telegram/verify-otp', async (req, res) => {
+  try {
+    const { phoneNumber, otpCode, email } = req.body;
+    if (!phoneNumber || !otpCode || !email) return res.status(400).json({ error: 'Phone number, OTP, and email are required' });
+
+    const loginData = telegramLogins.get(phoneNumber);
+    if (!loginData) {
+      return res.status(400).json({ error: 'Session expired or not found. Please request a new OTP.' });
+    }
+
+    const { client, phoneCodeHash } = loginData;
+
+    try {
+      await client.invoke(
+        new Api.auth.SignIn({
+          phoneNumber,
+          phoneCodeHash,
+          phoneCode: otpCode,
+        })
+      );
+    } catch (signInError) {
+      if (signInError.message && signInError.message.includes('SESSION_PASSWORD_NEEDED')) {
+        return res.status(401).json({ error: 'SESSION_PASSWORD_NEEDED', needs_password: true });
+      } else {
+        throw signInError;
+      }
+    }
+
+    const sessionString = client.session.save();
+    telegramLogins.delete(phoneNumber);
+    
+    // Save to DB
+    await pool.query('UPDATE users SET telegram_session = $1 WHERE email = $2', [sessionString, email]);
+
+    res.json({ message: 'Successfully connected to Telegram!', sessionString });
+  } catch (error) {
+    console.error('Telegram verify OTP error:', error);
+    res.status(500).json({ error: error.message || 'Failed to verify OTP' });
+  }
+});
+
+app.post('/api/telegram/verify-password', async (req, res) => {
+  try {
+    const { phoneNumber, password, email } = req.body;
+    if (!phoneNumber || !password || !email) return res.status(400).json({ error: 'Phone number, password, and email are required' });
+
+    const loginData = telegramLogins.get(phoneNumber);
+    if (!loginData) {
+      return res.status(400).json({ error: 'Session expired or not found. Please start over.' });
+    }
+
+    const { client } = loginData;
+    
+    const apiId = parseInt(process.env.TELEGRAM_API_ID);
+    const apiHash = process.env.TELEGRAM_API_HASH;
+    
+    await client.signInWithPassword(
+      { apiId, apiHash },
+      {
+        password: async () => password,
+        onError: (err) => { throw err; }
+      }
+    );
+
+    const sessionString = client.session.save();
+    telegramLogins.delete(phoneNumber);
+
+    // Save to DB
+    await pool.query('UPDATE users SET telegram_session = $1 WHERE email = $2', [sessionString, email]);
+
+    res.json({ message: 'Successfully connected to Telegram with 2FA!', sessionString });
+  } catch (error) {
+    console.error('Telegram verify password error:', error);
+    res.status(500).json({ error: error.message || 'Failed to verify password' });
   }
 });
 

@@ -4,6 +4,8 @@ import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
 import {filter} from 'rxjs/operators';
 import {PlanService} from './plan.service';
+import {AuthService} from './auth.service';
+import {ThemeService} from './theme.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,6 +17,8 @@ import {PlanService} from './plan.service';
 export class App {
   private router = inject(Router);
   public planService = inject(PlanService);
+  public authService = inject(AuthService);
+  public themeService = inject(ThemeService);
   
   isSidebarCollapsed = signal(false);
   isPublicPage = signal(true);

@@ -4,6 +4,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {RouterLink} from '@angular/router';
 import {PlatformService, PlatformState} from './platform.service';
 import {PlanService} from './plan.service';
+import {AuthService} from './auth.service';
 
 interface Summary {
   id: string;
@@ -19,24 +20,41 @@ interface Summary {
   selector: 'app-dashboard',
   imports: [CommonModule, MatIconModule, RouterLink],
   template: `
-    <div class="space-y-8 animate-in fade-in duration-700">
+    <div class="space-y-8 animate-in fade-in duration-700 relative z-10 text-arctic-dark dark:text-snow p-4 md:p-8 min-h-screen bg-snow dark:bg-arctic-dark transition-colors duration-1000">
+      <!-- Background Effects -->
+      <div class="fixed inset-0 pointer-events-none overflow-hidden z-0 hidden dark:block">
+        <div class="aurora animate-in fade-in duration-1000"></div>
+        <div class="neon-glow w-[600px] h-[600px] bg-[#3FD5FF]/5 -top-48 -right-48 animate-pulse"></div>
+      </div>
+
       <!-- Dashboard Header -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-display">Intelligence Overview</h1>
-          <p class="text-white/40 text-sm">Welcome back, Arctic Explorer</p>
+      <div class="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-6 mb-6 relative z-10">
+        <div class="flex items-center gap-4">
+          <div class="text-3xl font-black tracking-tighter">
+            CRUX<span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600 dark:from-[#3FD5FF] dark:via-white dark:to-[#8e2de2] animate-gradient-x tracking-tight">.</span>
+          </div>
         </div>
-        <div class="flex items-center gap-3">
-          <button routerLink="/settings" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors group">
-            <mat-icon class="text-white/40 group-hover:text-white transition-colors">person</mat-icon>
+        <div class="flex items-center gap-4">
+          <div class="text-right hidden md:block">
+            <h3 class="text-sm font-bold">{{ user()?.name || 'Arctic Explorer' }}</h3>
+            <p class="text-[10px] text-arctic-mid/50 dark:text-white/40 uppercase tracking-widest">{{ user()?.role || 'Admin' }}</p>
+          </div>
+          <button routerLink="/settings" class="w-12 h-12 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors group shadow-inner relative overflow-hidden">
+             <div class="absolute inset-0 bg-gradient-to-br from-sky-400/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <mat-icon class="text-arctic-mid dark:text-white/40 group-hover:text-black dark:group-hover:text-white transition-colors relative z-10">person</mat-icon>
           </button>
         </div>
+      </div>
+      
+      <div class="relative z-10">
+        <h1 class="text-3xl font-display font-bold">Intelligence <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600 dark:from-[#3FD5FF] dark:via-white dark:to-[#8e2de2]">Overview</span></h1>
+        <p class="text-arctic-mid/70 dark:text-white/40 text-sm mt-1">Real-time summaries from your connected platforms.</p>
       </div>
 
       <!-- Stats Overview -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         @for (stat of reactiveStats(); track stat.label) {
-          <div class="glass-card p-6 flex items-center gap-4">
+          <div class="glass-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-md p-6 flex items-center gap-4 relative z-10">
             <div [class]="'w-12 h-12 rounded-xl flex items-center justify-center ' + stat.bgClass">
               <mat-icon [class]="stat.iconClass">{{stat.icon}}</mat-icon>
             </div>
@@ -61,7 +79,7 @@ interface Summary {
 
           <div class="space-y-4">
             @for (summary of filteredSummaries(); track summary.id) {
-              <div class="glass-card p-6 group cursor-pointer animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div class="glass-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-md p-6 group cursor-pointer animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
                 <div class="flex items-start justify-between mb-4">
                   <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
@@ -113,7 +131,7 @@ interface Summary {
           <div class="space-y-3">
             @for (platform of platformService.platforms(); track platform.id) {
               @let isLocked = isIntegrationLocked(platform);
-              <div class="glass-card p-4 flex items-center justify-between transition-all duration-300" [class.opacity-50]="isLocked">
+              <div class="glass-card bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-md p-4 flex items-center justify-between transition-all duration-300 relative z-10" [class.opacity-50]="isLocked">
                 <div class="flex items-center gap-3">
                   <div 
                     [style.background-color]="isLocked ? 'rgba(255,255,255,0.02)' : platform.color + '20'" 
@@ -190,6 +208,8 @@ interface Summary {
 export class Dashboard {
   platformService = inject(PlatformService);
   planService = inject(PlanService);
+  authService = inject(AuthService);
+  user = computed(() => this.authService.currentUser());
   isGeneratingInsight = signal(false);
 
   generateInsight() {
