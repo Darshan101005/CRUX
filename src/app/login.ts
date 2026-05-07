@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { AuthService } from './auth.service';
 
 @Component({
   standalone: true,
@@ -55,6 +56,11 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
           <!-- Login Form -->
           <form [formGroup]="loginForm" (ngSubmit)="login()" class="space-y-4">
+            @if (loginError()) {
+              <div class="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-xl text-center">
+                {{ loginError() }}
+              </div>
+            }
             <div class="space-y-2">
               <span class="block text-xs font-bold uppercase tracking-widest text-arctic-mid/80 dark:text-white/60 ml-1">Email Address</span>
               <div class="relative">
@@ -84,9 +90,14 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
               }
             </div>
             
-            <button type="submit" [disabled]="loginForm.invalid" class="w-full py-3 mt-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed" [ngClass]="isDarkMode() ? 'bg-gradient-to-r from-[#3FD5FF] via-white to-[#8e2de2] hover:shadow-[#3FD5FF]/50' : 'bg-gradient-to-r from-sky-400 via-sky-100 to-blue-600 hover:shadow-blue-500/50'">
-              <mat-icon>login</mat-icon>
-              Login
+            <button type="submit" [disabled]="loginForm.invalid || isLoading()" class="w-full py-3 mt-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed" [ngClass]="isDarkMode() ? 'bg-gradient-to-r from-[#3FD5FF] via-white to-[#8e2de2] hover:shadow-[#3FD5FF]/50' : 'bg-gradient-to-r from-sky-400 via-sky-100 to-blue-600 hover:shadow-blue-500/50'">
+              @if (isLoading()) {
+                <mat-icon class="animate-spin">sync</mat-icon>
+                Logging in...
+              } @else {
+                <mat-icon>login</mat-icon>
+                Login
+              }
             </button>
           </form>
 
@@ -168,8 +179,11 @@ export class Login implements OnInit, OnDestroy {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private platformId = inject(PLATFORM_ID);
+  private authService = inject(AuthService);
   
   isDarkMode = signal(true);
+  loginError = signal<string | null>(null);
+  isLoading = signal(false);
   isChatOpen = signal(false);
   isPasswordVisible = signal(false);
   
@@ -205,7 +219,26 @@ export class Login implements OnInit, OnDestroy {
 
   login() {
     if (this.loginForm.valid) {
-      this.router.navigate(['/onboarding']);
+      this.isLoading.set(true);
+      const { email, password } = this.loginForm.value;
+      this.authService.login(email!, password!).subscribe({
+        next: (res) => {
+          this.loginError.set(null);
+          this.isLoading.set(false);
+          
+          if (res.user && res.user.platforms) {
+            // User already completed onboarding
+            this.router.navigate(['/platform-selection']);
+          } else {
+            // First time login
+            this.router.navigate(['/onboarding']);
+          }
+        },
+        error: (err) => {
+          this.loginError.set(err.error?.error || 'Login failed. Invalid email or password.');
+          this.isLoading.set(false);
+        }
+      });
     } else {
       this.loginForm.markAllAsTouched();
     }

@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { AuthService } from './auth.service';
 
 export function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password');
@@ -67,6 +68,11 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
 
           <!-- Signup Form -->
           <form [formGroup]="signupForm" (ngSubmit)="signUp()" class="space-y-4">
+            @if (signupError()) {
+              <div class="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-xl text-center">
+                {{ signupError() }}
+              </div>
+            }
             <div class="space-y-2">
               <span class="block text-xs font-bold uppercase tracking-widest text-arctic-mid/80 dark:text-white/60 ml-1">Full Name</span>
               <div class="relative">
@@ -232,8 +238,10 @@ export class Signup implements OnInit, OnDestroy {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private platformId = inject(PLATFORM_ID);
+  private authService = inject(AuthService);
   
   isDarkMode = signal(true);
+  signupError = signal<string | null>(null);
   isChatOpen = signal(false);
   isPasswordVisible = signal(false);
   isSuccess = signal(false);
@@ -285,10 +293,19 @@ export class Signup implements OnInit, OnDestroy {
 
   signUp() {
     if (this.signupForm.valid) {
-      this.isSuccess.set(true);
-      setTimeout(() => {
-        this.router.navigate(['/onboarding']);
-      }, 2000);
+      const { name, email, password } = this.signupForm.value;
+      this.authService.signup(name!, email!, password!).subscribe({
+        next: () => {
+          this.signupError.set(null);
+          this.isSuccess.set(true);
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        },
+        error: (err) => {
+          this.signupError.set(err.error?.error || 'Signup failed. Please try again.');
+        }
+      });
     } else {
       this.signupForm.markAllAsTouched();
     }
