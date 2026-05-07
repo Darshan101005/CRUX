@@ -1,20 +1,30 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# CRUX
 
-# Run and deploy your AI Studio app
+**Intelligent Message Aggregation Platform**
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/6f9be5ac-ba4a-4049-bb40-7ecfd62ce7be
+## Overview
 
-## Run Locally
+CRUX is a communication platform designed to aggregate and process large volumes of messages from various group chat ecosystems. As digital communication scales, extracting critical information from continuous message streams becomes increasingly challenging. CRUX mitigates information overload by distilling comprehensive conversations into concise summaries and surfacing critical messages.
 
-**Prerequisites:**  Node.js
+## System Architecture
 
+The CRUX ecosystem is built upon a modular architecture designed for scalability and multi-platform integration. 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Core Components
+
+*   **Data Ingestion Engine:** Connects to third-party messaging APIs (e.g., Telegram) to stream messages in real-time.
+*   **Client Application:** A responsive web interface for users to manage integrations and view their communication insights.
+
+### Technology Stack
+
+*   **Frontend:** Angular
+*   **Backend:** Node.js
+*   **Database:** Neon DB
+
+## Roadmap and Future Scope
+
+*   **Phase 1:** Core summarization engine and initial integration with the Telegram API.
+*   **Phase 2:** Expansion to enterprise communication platforms including Slack and Discord.
+*   **Phase 3:** Advanced analytics dashboard, user-specific summarization preferences, and automated task extraction for productivity enhancement.
