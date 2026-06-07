@@ -647,23 +647,39 @@ ${formattedText}`;
             temperature: 0.3,
             maxOutputTokens: 4096,
             responseMimeType: 'application/json',
-          }
+          },
+          generationConfig2: undefined,
         }),
       }
     );
 
+    if (!geminiResponse.ok) {
+      const errBody = await geminiResponse.text();
+      console.error('Gemini API HTTP error:', geminiResponse.status, errBody);
+      return res.status(500).json({ error: `Gemini API error: ${geminiResponse.status}` });
+    }
+
     const geminiData = await geminiResponse.json();
+    console.log('Gemini full response keys:', JSON.stringify(Object.keys(geminiData)));
+    
+    // gemini-2.5-flash is a thinking model: parts[0] = thinking, last part = actual text
+    const parts = geminiData.candidates?.[0]?.content?.parts || [];
+    let rawText = '';
+    // Find the last part that has a 'text' field (skip thinking parts)
+    for (let i = parts.length - 1; i >= 0; i--) {
+      if (parts[i].text !== undefined && parts[i].text !== null) {
+        rawText = parts[i].text;
+        break;
+      }
+    }
+    console.log('Gemini extracted text:', rawText.substring(0, 500));
     
     let summaryData;
     try {
-      const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      console.log('Gemini raw response:', rawText.substring(0, 500));
-      // Strip markdown code fences if present
       const cleanedText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
       summaryData = JSON.parse(cleanedText);
     } catch (parseError) {
       console.error('Failed to parse Gemini response:', parseError.message);
-      const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
       // Try to extract JSON from the response
       const jsonMatch = rawText.match(/\{[\s\S]*\}/);
@@ -679,6 +695,7 @@ ${formattedText}`;
           };
         }
       } else {
+        console.error('No JSON found. Full Gemini data:', JSON.stringify(geminiData).substring(0, 1000));
         summaryData = {
           overview: rawText || 'Summary generated but could not be structured.',
           importantMessages: [],
@@ -832,19 +849,40 @@ ${formattedText}`;
       }
     );
 
+    if (!geminiResponse.ok) {
+      const errBody = await geminiResponse.text();
+      console.error('Gemini chat API HTTP error:', geminiResponse.status, errBody);
+      return res.status(500).json({ error: `Gemini API error: ${geminiResponse.status}` });
+    }
+
     const geminiData = await geminiResponse.json();
+    
+    // gemini-2.5-flash is a thinking model: last part has the actual text
+    const parts = geminiData.candidates?.[0]?.content?.parts || [];
+    let rawText = '';
+    for (let i = parts.length - 1; i >= 0; i--) {
+      if (parts[i].text !== undefined && parts[i].text !== null) {
+        rawText = parts[i].text;
+        break;
+      }
+    }
+    console.log('Gemini chat summary text:', rawText.substring(0, 300));
+    
     let summaryData;
     try {
-      const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
       const cleanedText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
       summaryData = JSON.parse(cleanedText);
     } catch (e) {
-      const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      console.error('Chat summary parse error:', e.message);
       const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      summaryData = jsonMatch ? JSON.parse(jsonMatch[0]) : {
-        overview: rawText || 'Could not structure summary.',
-        importantMessages: [], dueDates: [], actionItems: []
-      };
+      if (jsonMatch) {
+        try { summaryData = JSON.parse(jsonMatch[0]); } catch (e2) {
+          summaryData = { overview: rawText || 'Could not structure summary.', importantMessages: [], dueDates: [], actionItems: [] };
+        }
+      } else {
+        console.error('No JSON in chat response. Raw:', JSON.stringify(geminiData).substring(0, 500));
+        summaryData = { overview: rawText || 'Could not structure summary.', importantMessages: [], dueDates: [], actionItems: [] };
+      }
     }
 
     res.json({
