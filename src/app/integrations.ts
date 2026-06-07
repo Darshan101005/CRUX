@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
-import {RouterLink} from '@angular/router';
+import {RouterLink, Router} from '@angular/router';
 import {PlatformService, PlatformState} from './platform.service';
 import {PlanService} from './plan.service';
 
@@ -122,6 +122,7 @@ import {PlanService} from './plan.service';
 export class Integrations {
   platformService = inject(PlatformService);
   planService = inject(PlanService);
+  private router = inject(Router);
 
   getConnectionLimit(): number {
     const tier = this.planService.currentTier();
@@ -152,10 +153,9 @@ export class Integrations {
     }
     
     if (platform.id === 'telegram') {
-      // Protocol specific: Telegram uses deep links or web-based login
-      // Simulating opening the official Crux bot for authentication via MTProto
-      window.open(`https://t.me/crux_intelligence_bot?start=auth_secure_${Math.random().toString(36).substring(7)}`, '_blank');
-      this.platformService.connect(platform.id);
+      // Navigate to the Telegram MTProto authentication flow
+      this.router.navigate(['/platform-selection']);
+      return;
     } else {
       // OAuth 2.0 flow simulation
       const popupWidth = 500;

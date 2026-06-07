@@ -68,6 +68,21 @@ export class PlatformService {
     }, 1500);
   }
 
+  /** Immediately set a platform as connected (used when session exists in DB) */
+  setConnected(id: string, extra: Partial<PlatformState> = {}) {
+    this.updateStatus(id, 'connected', {
+      lastSync: 'just now',
+      ...extra,
+    });
+  }
+
+  /** Update the unread count for a platform */
+  setUnreadCount(id: string, count: number) {
+    this.platformsList.update(list =>
+      list.map(p => p.id === id ? { ...p, unreadCount: count } : p)
+    );
+  }
+
   disconnect(id: string) {
     this.updateStatus(id, 'disconnected', { lastSync: undefined, unreadCount: 0 });
   }
